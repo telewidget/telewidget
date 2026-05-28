@@ -1,0 +1,129 @@
+"use client";
+
+import { WidgetConfig } from "@/types";
+import { useState, useRef, useEffect } from "react";
+import { ViewMode } from "./ConfiguratorMain";
+
+interface Props {
+  config: WidgetConfig;
+  width: number;
+  height: number;
+  previewTheme: "light" | "dark";
+  viewMode: ViewMode;
+}
+
+export function WidgetPreview({ config, width, height, previewTheme, viewMode }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [scale, setScale] = useState(1);
+
+  // Send config updates to the iframe
+  useEffect(() => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'RENDER_WIDGET',
+        config,
+        theme: previewTheme,
+        viewMode
+      }, '*');
+    }
+  }, [config, previewTheme, viewMode]);
+
+  // Handle scaling for the mock device
+  useEffect(() => {
+    const updateScale = () => {
+      if (!containerRef.current) return;
+      const { clientWidth, clientHeight } = containerRef.current;
+      
+      if (viewMode === "focused") {
+          setScale(1);
+          return;
+      }
+
+      const padding = 48;
+      const availableWidth = clientWidth - padding;
+      const availableHeight = clientHeight - padding;
+
+      const scaleX = availableWidth / width;
+      const scaleY = availableHeight / height;
+      
+      setScale(Math.min(scaleX, scaleY, 1));
+    };
+
+    const observer = new ResizeObserver(updateScale);
+    if (containerRef.current) observer.observe(containerRef.current);
+    
+    updateScale();
+
+    return () => observer.disconnect();
+  }, [width, height, viewMode]);
+
+  const isDarkMode = previewTheme === "dark" || (config.themeMode === "dark");
+
+  if (viewMode === "focused") {
+    return (
+      <div ref={containerRef} className={`flex-1 w-full h-full flex items-center justify-center relative transition-colors duration-500 ${
+        previewTheme === "dark" ? "bg-[#050505]" : "bg-muted/10"
+      }`}>
+         <iframe 
+            ref={iframeRef}
+            src="/preview-frame.html" 
+            className="w-full h-full border-none"
+            onLoad={() => {
+              iframeRef.current?.contentWindow?.postMessage({
+                type: 'RENDER_WIDGET', config, theme: previewTheme, viewMode
+              }, '*');
+            }}
+         />
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className={`flex-1 w-full h-full flex items-center justify-center overflow-hidden relative transition-colors duration-500 ${
+      previewTheme === "dark" ? "bg-[#050505]" : "bg-muted/10"
+    }`}>
+      <div 
+        className="relative bg-background border shadow-2xl transition-all duration-300 ease-in-out origin-center overflow-hidden flex flex-col"
+        style={{ 
+          width: `${width}px`, 
+          height: `${height}px`,
+          transform: `scale(${scale})`,
+          borderRadius: width > 500 ? "8px" : "32px",
+          backgroundColor: isDarkMode ? "#0a0a0a" : "#fff",
+          borderColor: isDarkMode ? "#222" : "#e2e8f0"
+        }}
+      >
+        {/* Mock Browser Header */}
+        <div className={`h-10 border-b flex items-center px-4 gap-1.5 shrink-0 ${
+          isDarkMode ? "bg-white/5 border-white/10" : "bg-muted/20"
+        }`}>
+          <div className="h-2 w-2 rounded-full bg-destructive/30" />
+          <div className="h-2 w-2 rounded-full bg-orange-500/30" />
+          <div className="h-2 w-2 rounded-full bg-emerald-500/30" />
+          {width > 600 && (
+            <div className={`ml-4 h-5 flex-1 max-w-md border rounded-md px-3 flex items-center ${
+              isDarkMode ? "bg-black/20 border-white/10" : "bg-background"
+            }`}>
+              <span className="text-[10px] text-muted-foreground truncate">https://your-website.com</span>
+            </div>
+          )}
+        </div>
+
+        {/* Iframe hosting the actual widget */}
+        <div className="flex-1 relative">
+           <iframe 
+              ref={iframeRef}
+              src="/preview-frame.html" 
+              className="w-full h-full border-none bg-transparent"
+              onLoad={() => {
+                iframeRef.current?.contentWindow?.postMessage({
+                  type: 'RENDER_WIDGET', config, theme: previewTheme, viewMode
+                }, '*');
+              }}
+           />
+        </div>
+      </div>
+    </div>
+  );
+}

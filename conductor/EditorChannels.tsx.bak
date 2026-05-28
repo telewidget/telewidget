@@ -1,0 +1,164 @@
+"use client";
+
+import { WidgetConfig } from "@/types";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Phone, Mail, MessageCircle, Send } from "lucide-react";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
+
+interface Props {
+  config: WidgetConfig;
+  update: (updates: Partial<WidgetConfig>) => void;
+}
+
+export function EditorChannels({ config, update }: Props) {
+  const updateChannel = (key: keyof WidgetConfig["channels"], data: any) => {
+    update({
+      channels: {
+        ...config.channels,
+        [key]: { ...config.channels[key], ...data }
+      }
+    });
+  };
+
+  const phoneInputStyles = {
+    inputClassName: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+    countrySelectorClassName: "flex items-center justify-center rounded-md border border-input bg-background px-2 mr-2",
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="space-y-6">
+        {/* WhatsApp */}
+        <div className="space-y-3 p-4 border rounded-xl bg-background">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                <MessageCircle size={18} />
+              </div>
+              <Label className="font-bold">WhatsApp</Label>
+            </div>
+            <Switch
+              checked={config.channels.whatsapp?.enabled}
+              onCheckedChange={(val) => updateChannel("whatsapp", { enabled: val })}
+            />
+          </div>
+          {config.channels.whatsapp?.enabled && (
+            <div className="grid gap-3 pt-2">
+              <PhoneInput
+                defaultCountry="us"
+                value={config.channels.whatsapp.phone}
+                onChange={(phone) => updateChannel("whatsapp", { phone })}
+                inputClassName={phoneInputStyles.inputClassName}
+                countrySelectorStyleProps={{
+                    buttonClassName: phoneInputStyles.countrySelectorClassName
+                }}
+              />
+              <Input
+                placeholder="Button label"
+                value={config.channels.whatsapp.label}
+                onChange={(e) => updateChannel("whatsapp", { label: e.target.value })}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Telegram / Live Chat */}
+        <div className="space-y-3 p-4 border rounded-xl bg-background">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-sky-500/10 text-sky-600">
+                <Send size={18} />
+              </div>
+              <Label className="font-bold">Telegram Chat</Label>
+            </div>
+            <Switch
+              checked={config.channels.telegram?.enabled}
+              onCheckedChange={(val) => updateChannel("telegram", { enabled: val })}
+            />
+          </div>
+          {config.channels.telegram?.enabled && (
+            <div className="grid gap-3 pt-2">
+              <Input
+                placeholder="Bot Token (optional for backend usage)"
+                value={config.channels.telegram.botToken}
+                onChange={(e) => updateChannel("telegram", { botToken: e.target.value })}
+              />
+              <Input
+                placeholder="Button label"
+                value={config.channels.telegram.label}
+                onChange={(e) => updateChannel("telegram", { label: e.target.value })}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Phone */}
+        <div className="space-y-3 p-4 border rounded-xl bg-background">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600">
+                <Phone size={18} />
+              </div>
+              <Label className="font-bold">Direct Call</Label>
+            </div>
+            <Switch
+              checked={config.channels.phone?.enabled}
+              onCheckedChange={(val) => updateChannel("phone", { enabled: val })}
+            />
+          </div>
+          {config.channels.phone?.enabled && (
+            <div className="grid gap-3 pt-2">
+              <PhoneInput
+                defaultCountry="us"
+                value={config.channels.phone.number}
+                onChange={(number) => updateChannel("phone", { number })}
+                inputClassName={phoneInputStyles.inputClassName}
+                countrySelectorStyleProps={{
+                    buttonClassName: phoneInputStyles.countrySelectorClassName
+                }}
+              />
+              <Input
+                placeholder="Button label"
+                value={config.channels.phone.label}
+                onChange={(e) => updateChannel("phone", { label: e.target.value })}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Email */}
+        <div className="space-y-3 p-4 border rounded-xl bg-background">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600">
+                <Mail size={18} />
+              </div>
+              <Label className="font-bold">Email Support</Label>
+            </div>
+            <Switch
+              checked={config.channels.email?.enabled}
+              onCheckedChange={(val) => updateChannel("email", { enabled: val })}
+            />
+          </div>
+          {config.channels.email?.enabled && (
+            <div className="grid gap-3 pt-2">
+              <Input
+                placeholder="Email address"
+                value={config.channels.email.address}
+                onChange={(e) => updateChannel("email", { address: e.target.value })}
+              />
+              <Input
+                placeholder="Button label"
+                value={config.channels.email.label}
+                onChange={(e) => updateChannel("email", { label: e.target.value })}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

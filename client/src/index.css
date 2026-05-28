@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: var(--tw-accent, #00D1FF);
+}
+
+:host {
+  all: initial; /* Reset everything inside shadow dom */
+}
+
+/* Custom styles for the widget */
+.tele-widget-container {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}

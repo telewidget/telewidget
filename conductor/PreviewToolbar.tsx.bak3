@@ -1,0 +1,168 @@
+"use client";
+
+import { PreviewMode, STANDARD_RESOLUTIONS } from "@/hooks/usePreviewSize";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Monitor, Smartphone, Tablet, Settings2, ChevronDown, Moon, Sun, Layout, Focus } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ViewMode } from "./ConfiguratorMain";
+
+interface Props {
+  mode: PreviewMode;
+  width: number;
+  height: number;
+  onModeChange: (mode: PreviewMode) => void;
+  onDimsChange: (dims: { width?: number; height?: number }) => void;
+  previewTheme: "light" | "dark";
+  onThemeChange: (theme: "light" | "dark") => void;
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
+}
+
+export function PreviewToolbar({ 
+  mode, 
+  width, 
+  height, 
+  onModeChange, 
+  onDimsChange, 
+  previewTheme, 
+  onThemeChange,
+  viewMode,
+  onViewModeChange
+}: Props) {
+  return (
+    <div className="bg-background border-b px-6 py-3 flex items-center justify-between shadow-sm">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border">
+          <Button
+            variant={mode === "mobile" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 gap-2 px-3"
+            onClick={() => onModeChange("mobile")}
+          >
+            <Smartphone className="h-4 w-4" />
+            <span className="text-xs font-medium">Mobile</span>
+          </Button>
+          <Button
+            variant={mode === "tablet" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 gap-2 px-3"
+            onClick={() => onModeChange("tablet")}
+          >
+            <Tablet className="h-4 w-4" />
+            <span className="text-xs font-medium">Tablet</span>
+          </Button>
+          <Button
+            variant={mode === "desktop" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 gap-2 px-3"
+            onClick={() => onModeChange("desktop")}
+          >
+            <Monitor className="h-4 w-4" />
+            <span className="text-xs font-medium">Desktop</span>
+          </Button>
+          <Button
+            variant={mode === "custom" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 gap-2 px-3"
+            onClick={() => onModeChange("custom")}
+          >
+            <Settings2 className="h-4 w-4" />
+            <span className="text-xs font-medium">Custom</span>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border">
+          <Button
+            variant={viewMode === "canvas" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 gap-2 px-3"
+            onClick={() => onViewModeChange("canvas")}
+            title="Canvas Simulation"
+          >
+            <Layout className="h-4 w-4" />
+            <span className="text-xs font-medium">Canvas</span>
+          </Button>
+          <Button
+            variant={viewMode === "focused" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 gap-2 px-3"
+            onClick={() => onViewModeChange("focused")}
+            title="Focused Editor"
+          >
+            <Focus className="h-4 w-4" />
+            <span className="text-xs font-medium">Focused</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border">
+          <Button
+            variant={previewTheme === "light" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => onThemeChange("light")}
+          >
+            <Sun className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={previewTheme === "dark" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => onThemeChange("dark")}
+          >
+            <Moon className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-muted/30 px-2 py-1 rounded border">
+             <Input
+               type="number"
+               value={width}
+               onChange={(e) => onDimsChange({ width: parseInt(e.target.value) || 0 })}
+               className="h-6 w-16 p-1 border-none bg-transparent text-center text-xs font-mono focus-visible:ring-0"
+             />
+             <span className="text-[10px] text-muted-foreground font-bold">×</span>
+             <Input
+               type="number"
+               value={height}
+               onChange={(e) => onDimsChange({ height: parseInt(e.target.value) || 0 })}
+               className="h-6 w-16 p-1 border-none bg-transparent text-center text-xs font-mono focus-visible:ring-0"
+             />
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-2">
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Presets</div>
+              {STANDARD_RESOLUTIONS.map((res) => (
+                <DropdownMenuItem 
+                  key={res.label} 
+                  onClick={() => {
+                    onModeChange("custom");
+                    onDimsChange({ width: res.width, height: res.height });
+                  }}
+                  className="text-xs flex justify-between"
+                >
+                  <span>{res.label}</span>
+                  <span className="text-muted-foreground font-mono">{res.width}x{res.height}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </div>
+  );
+}

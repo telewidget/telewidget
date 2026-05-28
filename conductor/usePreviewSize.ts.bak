@@ -1,0 +1,50 @@
+import { useState, useCallback, useMemo } from "react";
+
+export type PreviewMode = "mobile" | "tablet" | "desktop" | "custom";
+
+export interface PreviewDimensions {
+  width: number;
+  height: number;
+}
+
+export const PRESETS: Record<Exclude<PreviewMode, "custom">, PreviewDimensions> = {
+  mobile: { width: 375, height: 812 },
+  tablet: { width: 768, height: 1024 },
+  desktop: { width: 1920, height: 1080 },
+};
+
+export const STANDARD_RESOLUTIONS = [
+  { label: "720p (HD)", width: 1280, height: 720 },
+  { label: "1080p (Full HD)", width: 1920, height: 1080 },
+  { label: "1440p (QHD)", width: 2560, height: 1440 },
+  { label: "4K (UHD)", width: 3840, height: 2160 },
+];
+
+export function usePreviewSize() {
+  const [mode, setMode] = useState<PreviewMode>("mobile");
+  const [customDims, setCustomDims] = useState<PreviewDimensions>(PRESETS.mobile);
+
+  const dimensions = useMemo(() => {
+    if (mode === "custom") return customDims;
+    return PRESETS[mode];
+  }, [mode, customDims]);
+
+  const updateMode = useCallback((newMode: PreviewMode) => {
+    setMode(newMode);
+    if (newMode !== "custom") {
+      setCustomDims(PRESETS[newMode]);
+    }
+  }, []);
+
+  const updateCustomDims = useCallback((dims: Partial<PreviewDimensions>) => {
+    setMode("custom");
+    setCustomDims(prev => ({ ...prev, ...dims }));
+  }, []);
+
+  return {
+    mode,
+    dimensions,
+    updateMode,
+    updateCustomDims,
+  };
+}

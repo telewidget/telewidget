@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeleWidget Test Embed</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f0f2f5;
+      height: 200vh; /* Scrollable */
+      padding: 2rem;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>TeleWidget Test</h1>
+    <p>This is a test page for the embeddable TeleWidget.</p>
+    <p>The widget should appear in the bottom right corner.</p>
+  </div>
+
+  <!-- TeleWidget Embed Script -->
+  <!-- In production, this would be a URL to the CDN-hosted script -->
+  <script src="./dist/telewidget.iife.js"></script>
+  <script>
+    TeleWidget.init({
+      apiBaseUrl: 'http://localhost:3001',
+      accentColor: '#00D1FF'
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+"use client";
+
+import { WidgetConfig } from "@/types";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+
+interface Props {
+  config: WidgetConfig;
+  update: (updates: Partial<WidgetConfig>) => void;
+}
+
+export function EditorAppearance({ config, update }: Props) {
+  return (
+    <div className="space-y-10">
+      <section className="space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">Basic Style</h3>        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="accentColor">Accent Color</Label>
+            <div className="flex gap-2">
+              <Input
+                id="accentColor"
+                type="color"
+                value={config.accentColor}
+                onChange={(e) => update({ accentColor: e.target.value })}
+                className="w-10 p-1 h-9 cursor-pointer border-none"
+              />
+              <Input
+                type="text"
+                value={config.accentColor}
+                onChange={(e) => update({ accentColor: e.target.value })}
+                className="flex-1 font-mono uppercase text-[10px]"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="backgroundColor">Background</Label>
+            <div className="flex gap-2">
+              <Input
+                id="backgroundColor"
+                type="color"
+                value={config.backgroundColor}
+                onChange={(e) => update({ backgroundColor: e.target.value })}
+                className="w-10 p-1 h-9 cursor-pointer border-none"
+              />
+              <Input
+                type="text"
+                value={config.backgroundColor}
+                onChange={(e) => update({ backgroundColor: e.target.value })}
+                className="flex-1 font-mono uppercase text-[10px]"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-6">
+        <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">Glassmorphism</h3>
+        <div className="space-y-4 p-4 border rounded-xl bg-muted/20">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="glass-enabled">Enable Glass Effect</Label>
+            <Switch 
+              id="glass-enabled" 
+              checked={config.glassmorphism.enabled}
+              onCheckedChange={(val) => update({ glassmorphism: { ...config.glassmorphism, enabled: val } })}
+            />
+          </div>
+          
+          <div className={`space-y-6 pt-2 ${!config.glassmorphism.enabled && "opacity-40 pointer-events-none"}`}>
+            <div className="space-y-3">
+              <div className="flex justify-between text-[11px] font-medium">
+                <Label>Surface Opacity</Label>
+                <span className="text-muted-foreground">{Math.round(config.glassmorphism.opacity * 100)}%</span>
+              </div>
+              <Slider 
+                value={[config.glassmorphism.opacity * 100]} 
+                min={0} 
+                max={100} 
+                step={1}
+                onValueChange={(val) => update({ glassmorphism: { ...config.glassmorphism, opacity: val[0] / 100 } })}
+              />
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between text-[11px] font-medium">
+                <Label>Backdrop Blur</Label>
+                <span className="text-muted-foreground">{config.glassmorphism.blur}px</span>
+              </div>
+              <Slider 
+                value={[config.glassmorphism.blur]} 
+                min={0} 
+                max={20} 
+                step={1}
+                onValueChange={(val) => update({ glassmorphism: { ...config.glassmorphism, blur: val[0] } })}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">Effects & Typography</h3>
+        <div className="grid gap-6">
+          <div className="space-y-2">
+            <Label>Shadow & Glow</Label>
+            <div className="grid grid-cols-2 gap-2">
+               {[
+                 { label: "None", value: "none" },
+                 { label: "Soft", value: "soft" },
+                 { label: "Hard", value: "hard" },
+                 { label: "Neon Glow", value: "glow" }
+               ].map((opt) => (
+                 <button
+                   key={opt.value}
+                   onClick={() => update({ effects: { ...config.effects, shadow: opt.value as any } })}
+                   className={`text-[11px] px-3 py-2 border rounded-md transition-all ${
+                     config.effects.shadow === opt.value
+                       ? "bg-primary text-primary-foreground border-primary"
+                       : "hover:bg-accent bg-background"
+                   }`}
+                 >
+                   {opt.label}
+                 </button>
+               ))}
+            </div>
+          </div>
+
+          {config.effects.shadow === "glow" && (
+            <div className="space-y-3 px-4 py-3 border rounded-lg bg-muted/10 animate-in fade-in slide-in-from-top-2">
+              <div className="flex justify-between text-[11px] font-medium">
+                <Label>Glow Intensity</Label>
+                <span className="text-muted-foreground">{Math.round(config.effects.glowIntensity * 100)}%</span>
+              </div>
+              <Slider 
+                value={[config.effects.glowIntensity * 100]} 
+                min={0} 
+                max={100} 
+                step={1}
+                onValueChange={(val) => update({ effects: { ...config.effects, glowIntensity: val[0] / 100 } })}
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>Font Family</Label>
+            <div className="flex gap-2">
+               {[
+                 { label: "Sans", value: "Geist Sans" },
+                 { label: "Mono", value: "Geist Mono" }
+               ].map((opt) => (
+                 <button
+                   key={opt.value}
+                   onClick={() => update({ typography: { ...config.typography, fontFamily: opt.value as any } })}
+                   className={`flex-1 text-[11px] px-3 py-2 border rounded-md transition-all ${
+                     config.typography.fontFamily === opt.value
+                       ? "bg-primary text-primary-foreground border-primary"
+                       : "hover:bg-accent bg-background"
+                   }`}
+                 >
+                   {opt.label}
+                 </button>
+               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">Placement</h3>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => update({ position: "bottom-left" })}
+            className={`text-[11px] px-3 py-2 border rounded-md transition-all ${
+              config.position === "bottom-left"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "hover:bg-accent bg-background"
+            }`}
+          >
+            Bottom Left
+          </button>
+          <button
+            onClick={() => update({ position: "bottom-right" })}
+            className={`text-[11px] px-3 py-2 border rounded-md transition-all ${
+              config.position === "bottom-right"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "hover:bg-accent bg-background"
+            }`}
+          >
+            Bottom Right
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}

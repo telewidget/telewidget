@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeleWidget Preview</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .theme-light { background-color: transparent; color: #000000; }
+        .theme-dark { background-color: transparent; color: #ffffff; }
+
+        /* Mock content to make it look like a real page */
+        .mock-content {
+            padding: 40px;
+            opacity: 0.15;
+            pointer-events: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .skeleton-header { height: 48px; width: 60%; background: currentColor; border-radius: 8px; margin-bottom: 32px; }
+        .skeleton-line { height: 16px; width: 100%; background: currentColor; border-radius: 4px; margin-bottom: 16px; }
+        .skeleton-line.short { width: 80%; }
+        .skeleton-line.shorter { width: 60%; }
+        .skeleton-box { height: 200px; width: 100%; background: currentColor; border-radius: 12px; margin-top: 32px; }
+
+        .hide-mock .mock-content { display: none; }
+    </style>
+</head>
+<body class="theme-light">
+    <div class="mock-content" id="mockContent">
+        <div class="skeleton-header"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line shorter"></div>
+        <div class="skeleton-box"></div>
+    </div>
+
+    <!-- The actual built widget script -->
+    <script src="/telewidget.iife.js"></script>
+
+    <script>
+        let debounceTimer;
+
+        window.addEventListener("message", (event) => {
+            if (event.data.type === 'RENDER_WIDGET') {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const { config, theme, viewMode } = event.data;
+
+                    // Apply theme classes
+                    document.body.className = `theme-${theme} ${viewMode === 'focused' ? 'hide-mock' : ''}`;
+
+                    // Re-initialize widget by removing the old host and calling init again
+                    const oldHost = document.getElementById(config.containerId || 'tele-widget-host');
+                    if (oldHost) {
+                        oldHost.remove();
+                    }
+
+                    if (window.TeleWidget && window.TeleWidget.init) {
+                        // Force the config to use a specific container ID so we can track it
+                        const safeConfig = Object.assign({}, config, { containerId: 'tele-widget-host' });
+                        window.TeleWidget.init(safeConfig);
+                    }
+                }, 300); // 300ms debounce to prevent flicker during fast typing
+            }
+        });
+    </script>
+</body>
+</html>

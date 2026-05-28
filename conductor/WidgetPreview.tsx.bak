@@ -1,0 +1,161 @@
+"use client";
+
+import { WidgetConfig } from "@/types";
+import { MessageCircle, Phone, Mail, Send, X } from "lucide-react";
+import { useMemo, useState, useRef, useEffect } from "react";
+
+interface Props {
+  config: WidgetConfig;
+  width: number;
+  height: number;
+}
+
+export function WidgetPreview({ config, width, height }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (!containerRef.current) return;
+      const { clientWidth, clientHeight } = containerRef.current;
+      
+      const padding = 48;
+      const availableWidth = clientWidth - padding;
+      const availableHeight = clientHeight - padding;
+
+      const scaleX = availableWidth / width;
+      const scaleY = availableHeight / height;
+      
+      setScale(Math.min(scaleX, scaleY, 1));
+    };
+
+    const observer = new ResizeObserver(updateScale);
+    if (containerRef.current) observer.observe(containerRef.current);
+    
+    updateScale();
+
+    return () => observer.disconnect();
+  }, [width, height]);
+
+  const borderRadiusStyle = useMemo(() => {
+    switch (config.borderRadius) {
+      case "ROUND_FOUR": return "4px";
+      case "ROUND_EIGHT": return "8px";
+      case "ROUND_TWELVE": return "12px";
+      case "ROUND_FULL": return "9999px";
+      default: return "12px";
+    }
+  }, [config.borderRadius]);
+
+  return (
+    <div ref={containerRef} className="flex-1 w-full h-full flex items-center justify-center overflow-hidden relative bg-muted/10">
+      <div 
+        className="relative bg-background border shadow-2xl transition-all duration-300 ease-in-out origin-center"
+        style={{ 
+          width: `${width}px`, 
+          height: `${height}px`,
+          transform: `scale(${scale})`,
+          borderRadius: width > 500 ? "8px" : "32px"
+        }}
+      >
+        <div className="h-10 border-b bg-muted/20 flex items-center px-4 gap-1.5 shrink-0">
+          <div className="h-2 w-2 rounded-full bg-destructive/30" />
+          <div className="h-2 w-2 rounded-full bg-orange-500/30" />
+          <div className="h-2 w-2 rounded-full bg-emerald-500/30" />
+          {width > 600 && (
+            <div className="ml-4 h-5 flex-1 max-w-md bg-background border rounded-md px-3 flex items-center">
+              <span className="text-[10px] text-muted-foreground truncate">https://your-website.com</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 p-6 relative bg-muted/5 h-[calc(100%-40px)] overflow-hidden">
+          <div className="space-y-6 opacity-10">
+             <div className="h-8 w-1/3 bg-foreground rounded-full" />
+             <div className="space-y-2">
+               <div className="h-4 w-full bg-foreground rounded-full" />
+               <div className="h-4 w-full bg-foreground rounded-full" />
+               <div className="h-4 w-2/3 bg-foreground rounded-full" />
+             </div>
+             <div className="grid grid-cols-3 gap-4">
+                <div className="aspect-video bg-foreground rounded-xl" />
+                <div className="aspect-video bg-foreground rounded-xl" />
+                <div className="aspect-video bg-foreground rounded-xl" />
+             </div>
+             <div className="space-y-2 pt-4">
+               <div className="h-4 w-full bg-foreground rounded-full" />
+               <div className="h-4 w-5/6 bg-foreground rounded-full" />
+             </div>
+          </div>
+
+          <div 
+            className={`absolute p-6 flex flex-col pointer-events-none inset-0 ${
+              config.position === "bottom-left" ? "items-start" : "items-end"
+            } justify-end`}
+          >
+             <div 
+               className="w-full max-w-[340px] max-h-[480px] bg-background border shadow-xl flex flex-col pointer-events-auto overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-500"
+               style={{ borderRadius: borderRadiusStyle }}
+             >
+                <header 
+                  className="px-6 py-5 border-b flex items-center justify-between"
+                  style={{ backgroundColor: `${config.accentColor}08` }}
+                >
+                  <div>
+                    <h3 className="font-bold text-sm tracking-tight">{config.title}</h3>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="text-[10px] font-medium uppercase text-muted-foreground">Active now</span>
+                    </div>
+                  </div>
+                </header>
+
+                <div className="p-6 space-y-6 overflow-y-auto">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Response Channel</p>
+                    <p className="text-xs text-muted-foreground">Choose the fastest way to reach the support desk.</p>
+                  </div>
+
+                  <div className="grid gap-2">
+                    {config.channels.telegram?.enabled && (
+                      <div className="flex items-center gap-3 p-3 border rounded-xl hover:bg-muted/50 transition-colors">
+                        <div className="p-2 rounded-lg bg-sky-500/10 text-sky-600"><Send size={16} /></div>
+                        <span className="text-sm font-medium">{config.channels.telegram.label}</span>
+                      </div>
+                    )}
+                    {config.channels.whatsapp?.enabled && (
+                      <div className="flex items-center gap-3 p-3 border rounded-xl hover:bg-muted/50 transition-colors">
+                        <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600"><MessageCircle size={16} /></div>
+                        <span className="text-sm font-medium">{config.channels.whatsapp.label}</span>
+                      </div>
+                    )}
+                    {config.channels.phone?.enabled && (
+                      <div className="flex items-center gap-3 p-3 border rounded-xl hover:bg-muted/50 transition-colors">
+                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600"><Phone size={16} /></div>
+                        <span className="text-sm font-medium">{config.channels.phone.label}</span>
+                      </div>
+                    )}
+                    {config.channels.email?.enabled && (
+                      <div className="flex items-center gap-3 p-3 border rounded-xl hover:bg-muted/50 transition-colors">
+                        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-600"><Mail size={16} /></div>
+                        <span className="text-sm font-medium">{config.channels.email.label}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+             </div>
+
+             <div className="mt-4 flex">
+                <button 
+                  className="h-12 w-12 rounded-full flex items-center justify-center text-white shadow-lg pointer-events-auto transition-transform hover:scale-110 active:scale-95"
+                  style={{ backgroundColor: config.accentColor }}
+                >
+                  <X size={24} />
+                </button>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,88 @@
+export interface WidgetConfig {
+  id: string;
+  name: string;
+  updatedAt: string;
+  
+  // Design
+  accentColor: string;
+  backgroundColor: string;
+  borderRadius: "ROUND_FOUR" | "ROUND_EIGHT" | "ROUND_TWELVE" | "ROUND_FULL";
+  position: "bottom-right" | "bottom-left";
+  
+  // Advanced Design (Electrotion style)
+  themeMode: "light" | "dark" | "system";
+  glassmorphism: {
+    enabled: boolean;
+    opacity: number;
+    blur: number;
+  };
+  effects: {
+    shadow: "none" | "soft" | "hard" | "glow";
+    glowIntensity: number;
+  };
+  typography: {
+    fontFamily: "Geist Sans" | "Geist Mono" | "Inter" | "System";
+  };
+
+  // Content
+  title: string;
+  welcomeMessage: string;
+
+  // Channels
+  channels: {
+    whatsapp?: {
+      enabled: boolean;
+      phone: string;
+      label: string;
+    };
+    phone?: {
+      enabled: boolean;
+      number: string;
+      label: string;
+    };
+    email?: {
+      enabled: boolean;
+      address: string;
+      label: string;
+    };
+    telegram?: {
+      enabled: boolean;
+      botToken: string;
+      label: string;
+    };
+  };
+
+  // API
+  apiBaseUrl: string;
+}
+
+export const DEFAULT_CONFIG: Omit<WidgetConfig, "id" | "name" | "updatedAt"> = {
+  accentColor: "#00ff88", 
+  backgroundColor: "#FFFFFF",
+  borderRadius: "ROUND_TWELVE",
+  position: "bottom-right",
+  
+  themeMode: "system",
+  glassmorphism: {
+    enabled: false,
+    opacity: 0.8,
+    blur: 10,
+  },
+  effects: {
+    shadow: "soft",
+    glowIntensity: 0.5,
+  },
+  typography: {
+    fontFamily: "Geist Sans",
+  },
+
+  title: "Support Desk",
+  welcomeMessage: "Hi there! 👋 Have any questions? We're here to help.",
+  channels: {
+    whatsapp: { enabled: true, phone: "", label: "WhatsApp" },
+    phone: { enabled: true, number: "", label: "Call" },
+    email: { enabled: true, address: "", label: "Email" },
+    telegram: { enabled: true, botToken: "", label: "Live Chat" },
+  },
+  apiBaseUrl: "http://localhost:3001",
+};

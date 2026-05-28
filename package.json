@@ -1,0 +1,20 @@
+{
+  "name": "telewidget",
+  "private": true,
+  "description": "A communication widget for Telegram",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "client:dev": "npm run dev -w client",
+    "client:build": "npm run build -w client",
+    "server:dev": "npm run dev -w server",
+    "server:start": "npm run start -w server",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

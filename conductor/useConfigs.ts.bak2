@@ -1,0 +1,107 @@
+import { useState, useEffect } from "react";
+import { WidgetConfig, DEFAULT_CONFIG } from "../types";
+
+const STORAGE_KEY = "telewidget_configs";
+
+function mergeWithDefault(config: any): WidgetConfig {
+  return {
+    ...DEFAULT_CONFIG,
+    ...config,
+    glassmorphism: {
+        ...DEFAULT_CONFIG.glassmorphism,
+        ...(config.glassmorphism || {})
+    },
+    effects: {
+        ...DEFAULT_CONFIG.effects,
+        ...(config.effects || {})
+    },
+    typography: {
+        ...DEFAULT_CONFIG.typography,
+        ...(config.typography || {})
+    },
+    channels: {
+        ...DEFAULT_CONFIG.channels,
+        ...(config.channels || {})
+    }
+  } as WidgetConfig;
+}
+
+export function useConfigs() {
+  const [configs, setConfigs] = useState<WidgetConfig[]>([]);
+  const [activeConfigId, setActiveConfigId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const merged = parsed.map((c: any) => mergeWithDefault(c));
+        setConfigs(merged);
+        if (merged.length > 0) {
+          setActiveConfigId(merged[0].id);
+        }
+      } catch (e) {
+        console.error("Failed to parse configs", e);
+      }
+    } else {
+      // Create initial default config
+      const initial: WidgetConfig = {
+        ...DEFAULT_CONFIG,
+        id: crypto.randomUUID(),
+        name: "My First Widget",
+        updatedAt: new Date().toISOString(),
+      } as WidgetConfig;
+      setConfigs([initial]);
+      setActiveConfigId(initial.id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([initial]));
+    }
+  }, []);
+
+  const activeConfig = configs.find(c => c.id === activeConfigId) || null;
+
+  const updateActiveConfig = (updates: Partial<WidgetConfig>) => {
+    if (!activeConfigId) return;
+
+    const newConfigs = configs.map(c => {
+      if (c.id === activeConfigId) {
+        return { ...c, ...updates, updatedAt: new Date().toISOString() };
+      }
+      return c;
+    });
+
+    setConfigs(newConfigs);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfigs));
+  };
+
+  const createConfig = (name: string) => {
+    const newConfig: WidgetConfig = {
+      ...DEFAULT_CONFIG,
+      id: crypto.randomUUID(),
+      name,
+      updatedAt: new Date().toISOString(),
+    } as WidgetConfig;
+    const newConfigs = [...configs, newConfig];
+    setConfigs(newConfigs);
+    setActiveConfigId(newConfig.id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfigs));
+  };
+
+  const deleteConfig = (id: string) => {
+    const newConfigs = configs.filter(c => c.id !== id);
+    setConfigs(newConfigs);
+    if (activeConfigId === id) {
+      setActiveConfigId(newConfigs.length > 0 ? newConfigs[0].id : null);
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfigs));
+  };
+
+  return {
+    configs,
+    activeConfig,
+    activeConfigId,
+    setActiveConfigId,
+    updateActiveConfig,
+    createConfig,
+    deleteConfig
+  };
+}
